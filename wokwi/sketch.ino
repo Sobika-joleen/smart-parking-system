@@ -1,19 +1,20 @@
-#include <WiFi.h>
 #include <HTTPClient.h>
+#include <WiFi.h>
+
 
 #define NUM_SLOTS 6
 
 // WiFi credentials
-const char* ssid = "Wokwi-GUEST";
-const char* password = "";
+const char *ssid = "Wokwi-GUEST";
+const char *password = "";
 
 // ThingSpeak API Key
-String apiKey = "YOUR_WRITE_API_KEY";
+String apiKey = "2Y54O69A6Z59DWPC";
 
 // Pin configuration
 int trigPins[NUM_SLOTS] = {13, 14, 26, 4, 5, 18};
 int echoPins[NUM_SLOTS] = {12, 27, 25, 16, 17, 19};
-int ledPins[NUM_SLOTS]  = {33, 32, 23, 22, 21, 2};
+int ledPins[NUM_SLOTS] = {33, 32, 23, 22, 21, 2};
 
 long duration;
 int distance;
@@ -29,7 +30,8 @@ int getDistance(int trigPin, int echoPin) {
 
   duration = pulseIn(echoPin, HIGH, 30000); // timeout added
 
-  if(duration == 0) return 999; // no object detected
+  if (duration == 0)
+    return 999; // no object detected
 
   distance = duration * 0.034 / 2;
   return distance;
@@ -71,7 +73,7 @@ void loop() {
     Serial.print(" Distance: ");
     Serial.println(dist);
 
-    if (dist < 10) {   // 🚗 Car detected
+    if (dist < 10) { // 🚗 Car detected
       digitalWrite(ledPins[i], HIGH);
       slotStatus[i] = 1;
     } else {

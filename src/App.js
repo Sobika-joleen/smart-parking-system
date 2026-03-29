@@ -1,53 +1,64 @@
-import React, { useEffect, useState } from "react";
-import axios from "axios";
-import "./App.css";
+import React, { useState, useEffect } from "react";
+import Dashboard from "./components/Dashboard";
+import LandingPage from "./components/LandingPage";
+import AuthPage from "./components/AuthPage";
+import { supabase } from "./supabaseClient";
+import "./index.css";
 
 function App() {
-  const [slots, setSlots] = useState([]);
-
-  const fetchData = async () => {
-    try {
-      const res = await axios.get(
-        "https://api.thingspeak.com/channels/3317554/feeds.json?results=1"
-      );
-
-      const data = res.data.feeds[0];
-
-      setSlots([
-        data.field1,
-        data.field2,
-        data.field3,
-        data.field4,
-        data.field5,
-        data.field6,
-      ]);
-    } catch (error) {
-      console.error("Error fetching data:", error);
-    }
-  };
+  const [session, setSession] = useState(null);
+  const [showAuth, setShowAuth] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchData();
-    const interval = setInterval(fetchData, 15000);
-    return () => clearInterval(interval);
+    supabase.auth.getSession()
+      .then(({ data: { session } }) => {
+        setSession(session);
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error("Supabase session error (Check your .env setup):", err);
+        setLoading(false);
+      });
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+      if (session) setShowAuth(false);
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
-  return (
-    <div className="container">
-      <h1>🚗 Smart Parking System</h1>
-
-      <div className="grid">
-        {slots.map((slot, index) => (
-          <div
-            key={index}
-            className={`card ${slot === "1" ? "occupied" : "free"}`}
-          >
-            <h2>Slot {index + 1}</h2>
-            <p>{slot === "1"   ? "Occupied 🔴" : "Available 🟢"}</p>
-          </div>
-        ))}
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center">
+        <div className="w-8 h-8 rounded-full border-t-2 border-[#c6ff00] animate-spin" />
       </div>
-    </div>
+    );
+  }
+
+  if (showAuth && !session) {
+    return (
+      <AuthPage 
+        onAuthSuccess={() => setShowAuth(false)} 
+        onBack={() => setShowAuth(false)} 
+      />
+    );
+  }
+
+  if (!session) {
+    return <LandingPage onLogin={() => setShowAuth(true)} />;
+  }
+
+  return (
+    <Dashboard 
+      onLogout={async () => {
+        await supabase.auth.signOut();
+      }} 
+      session={session}
+    />
   );
 }
 
