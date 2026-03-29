@@ -1,70 +1,186 @@
-# Getting Started with Create React App
+# 🚗 Smart Parking System
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+## 📌 Overview
 
-## Available Scripts
+The Smart Parking System is an IoT-based solution designed to monitor parking slot availability in real time.
+It uses ESP32 with ultrasonic sensors (simulated using Wokwi), sends data to ThingSpeak cloud, and displays parking status on a React-based web dashboard.
 
-In the project directory, you can run:
+This project helps reduce time spent searching for parking and demonstrates integration of IoT, cloud, and web technologies.
 
-### `npm start`
+---
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+## 🛠️ Technologies Used
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+* 🔌 ESP32 (Wokwi Simulation)
+* 📡 Ultrasonic Sensors (HC-SR04)
+* ☁️ ThingSpeak (Cloud Platform)
+* 🌐 React.js (Frontend)
+* ⚡ Axios (API calls)
+* 🧑‍💻 VS Code
 
-### `npm test`
+---
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+## ⚙️ Features
 
-### `npm run build`
+* ✅ Real-time parking slot detection
+* ✅ 6 parking slots monitoring
+* ✅ LED indication (occupied/free)
+* ✅ Cloud data storage using ThingSpeak
+* ✅ Live dashboard using React
+* ✅ Auto-refresh every 15 seconds
+* ✅ Simulation-based (no physical hardware required)
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+---
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+## 🚀 System Architecture
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+Wokwi Simulation → ESP32 → ThingSpeak Cloud → React Dashboard
 
-### `npm run eject`
+---
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+## 🔌 Wokwi Simulation
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+This project uses Wokwi to simulate ESP32 and ultrasonic sensors.
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+👉 Simulation Link:
+https://wokwi.com/projects/YOUR_PROJECT_LINK
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+📁 Wokwi files are included in:
 
-## Learn More
+```
+/wokwi/
+```
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+---
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+## ☁️ ThingSpeak Configuration
 
-### Code Splitting
+* Channel ID: 3317554
+* Fields:
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+  * Field1 → Slot1
+  * Field2 → Slot2
+  * Field3 → Slot3
+  * Field4 → Slot4
+  * Field5 → Slot5
+  * Field6 → Slot6
 
-### Analyzing the Bundle Size
+⚠️ Note:
+Do NOT expose your Write API key publicly.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+---
 
-### Making a Progressive Web App
+## 🌐 React Dashboard
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+The frontend displays real-time parking availability.
 
-### Advanced Configuration
+### 📊 Status Indicators:
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+* 🔴 Occupied
+* 🟢 Available
 
-### Deployment
+### 🔄 Auto Update:
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+* Fetches data every 15 seconds from ThingSpeak API
 
-### `npm run build` fails to minify
+---
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+## 📸 Screenshots
+
+### 🔌 Wokwi Simulation
+
+![Wokwi](screenshots/wokwi.png)
+
+### ☁️ ThingSpeak Dashboard
+
+![ThingSpeak](screenshots/thingspeak.png)
+
+### 🌐 React Dashboard
+
+![Dashboard](screenshots/dashboard.png)
+
+---
+
+## 🧪 How to Run the Project
+
+### 1️⃣ Clone the Repository
+
+```
+git clone https://github.com/YOUR_USERNAME/smart-parking-system.git
+cd smart-parking-system
+```
+
+### 2️⃣ Install Dependencies
+
+```
+npm install
+```
+
+### 3️⃣ Run React App
+
+```
+npm start
+```
+
+---
+
+## 🔗 API Used
+
+ThingSpeak API:
+
+```
+https://api.thingspeak.com/channels/3317554/feeds.json?results=1
+```
+
+---
+
+## 📂 Project Structure
+
+```
+smart-parking-system/
+│
+├── wokwi/
+│   ├── diagram.json
+│   └── sketch.ino
+│
+├── src/
+├── public/
+├── package.json
+└── README.md
+```
+
+---
+
+## 🧠 Key Concepts Used
+
+* Internet of Things (IoT)
+* Sensor Data Processing
+* Cloud Integration
+* REST API
+* Frontend Development
+
+---
+
+## 🚀 Future Enhancements
+
+* 📱 Mobile app integration
+* 📊 Analytics dashboard
+* 🔔 Notification system
+* 🎥 Camera-based detection (YOLO)
+* 🅿️ Slot booking system
+
+---
+
+
+
+## 🧪 Simulation Note
+
+This project uses Wokwi simulation instead of physical hardware, ensuring easy testing and reproducibility.
+
+---
+
+## ⭐ Acknowledgement
+
+This project was developed as part of an academic IoT-based smart system implementation.
+
+---
