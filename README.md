@@ -43,7 +43,7 @@ Wokwi Simulation → ESP32 → ThingSpeak Cloud → React Dashboard
 This project uses Wokwi to simulate ESP32 and ultrasonic sensors.
 
 👉 Simulation Link:
-https://wokwi.com/projects/YOUR_PROJECT_LINK
+https://wokwi.com/projects/459802884165306369
 
 📁 Wokwi files are included in:
 
@@ -65,8 +65,7 @@ https://wokwi.com/projects/YOUR_PROJECT_LINK
   * Field5 → Slot5
   * Field6 → Slot6
 
-⚠️ Note:
-Do NOT expose your Write API key publicly.
+
 
 ---
 
@@ -85,19 +84,7 @@ The frontend displays real-time parking availability.
 
 ---
 
-## 📸 Screenshots
 
-### 🔌 Wokwi Simulation
-
-![Wokwi](screenshots/wokwi.png)
-
-### ☁️ ThingSpeak Dashboard
-
-![ThingSpeak](screenshots/thingspeak.png)
-
-### 🌐 React Dashboard
-
-![Dashboard](screenshots/dashboard.png)
 
 ---
 
