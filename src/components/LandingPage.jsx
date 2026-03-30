@@ -109,7 +109,7 @@ const LandingPage = ({ onLogin }) => {
           <div className="w-8 h-8 rounded-lg bg-[#c6ff00] flex items-center justify-center shadow-[0_0_14px_rgba(198,255,0,0.4)]">
             <span className="text-[#0a0a0a] font-black text-sm">P</span>
           </div>
-          <span className="text-white font-bold text-sm tracking-widest uppercase">SmartPark</span>
+          <span className="text-white font-bold text-sm tracking-widest uppercase">ParkMate</span>
         </div>
 
         <div className="hidden md:flex items-center gap-8">

@@ -115,7 +115,7 @@ const TicketModal = ({ isOpen, onClose, bookingName, vehicleNumber, slotId, leve
             {/* Total Paid */}
             <div className="flex items-center justify-between border-t border-b border-white/5 py-3 mt-2">
               <span className="text-xs text-gray-400 font-medium">Payment Successful via UPI</span>
-              <span className="text-lg font-black text-white">${Number(total || 0).toFixed(2)}</span>
+              <span className="text-lg font-black text-white">₹{Number(total || 0).toFixed(2)}</span>
             </div>
 
             {/* Barcode Mock */}

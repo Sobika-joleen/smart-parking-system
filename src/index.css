@@ -9,7 +9,9 @@
   box-sizing: border-box;
 }
 
-html, body, #root {
+html,
+body,
+#root {
   height: 100%;
   width: 100%;
   overflow: hidden;
@@ -22,21 +24,44 @@ body {
 }
 
 /* ── Scrollbar ── */
-::-webkit-scrollbar { width: 3px; height: 3px; }
-::-webkit-scrollbar-track { background: #1a1a1a; }
-::-webkit-scrollbar-thumb { background: rgba(198,255,0,0.4); border-radius: 4px; }
+::-webkit-scrollbar {
+  width: 3px;
+  height: 3px;
+}
+
+::-webkit-scrollbar-track {
+  background: #1a1a1a;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(198, 255, 0, 0.4);
+  border-radius: 4px;
+}
 
 /* ── Animated nav path (Tesla map) ── */
 @keyframes dashFlow {
-  0%   { stroke-dashoffset: 0; }
-  100% { stroke-dashoffset: -32; }
+  0% {
+    stroke-dashoffset: 0;
+  }
+
+  100% {
+    stroke-dashoffset: -32;
+  }
 }
 
 /* ── Modal slide up ── */
 @keyframes slideUp {
-  from { opacity: 0; transform: translateY(40px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
+
 .animate-slideUp {
   animation: slideUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
 }
@@ -48,6 +73,7 @@ body {
   transition: opacity 0.15s;
   pointer-events: none;
 }
+
 .has-tooltip:hover .tooltip {
   visibility: visible;
   opacity: 1;
@@ -66,31 +92,37 @@ body {
 
 /* ── No parking stripe ── */
 .stripe-bg {
-  background: repeating-linear-gradient(
-    45deg,
-    rgba(198,255,0,0.05),
-    rgba(198,255,0,0.05) 6px,
-    rgba(20,20,20,0.8) 6px,
-    rgba(20,20,20,0.8) 16px
-  );
+  background: repeating-linear-gradient(45deg,
+      rgba(198, 255, 0, 0.05),
+      rgba(198, 255, 0, 0.05) 6px,
+      rgba(20, 20, 20, 0.8) 6px,
+      rgba(20, 20, 20, 0.8) 16px);
 }
 
 /* ── Scrollbar hide ── */
-.no-scrollbar::-webkit-scrollbar { display: none; }
-.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
 
 /* ── Gradient animated border ── */
 .gradient-border {
   position: relative;
 }
+
 .gradient-border::before {
   content: '';
   position: absolute;
   inset: 0;
   border-radius: inherit;
   padding: 1px;
-  background: linear-gradient(135deg, rgba(198,255,0,0.5), rgba(198,255,0,0.05) 50%, rgba(198,255,0,0.3));
+  background: linear-gradient(135deg, rgba(198, 255, 0, 0.5), rgba(198, 255, 0, 0.05) 50%, rgba(198, 255, 0, 0.3));
   -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
   pointer-events: none;
@@ -98,16 +130,24 @@ body {
 
 /* ── Radar scan line on map ── */
 @keyframes radarScan {
-  0%   { top: 0%; opacity: 0.8; }
-  100% { top: 100%; opacity: 0; }
+  0% {
+    top: 0%;
+    opacity: 0.8;
+  }
+
+  100% {
+    top: 100%;
+    opacity: 0;
+  }
 }
+
 .radar-scan-line {
   position: absolute;
   left: 0;
   right: 0;
   height: 2px;
-  background: linear-gradient(to right, transparent, rgba(198,255,0,0.8), transparent);
-  box-shadow: 0 0 12px rgba(198,255,0,0.6);
+  background: linear-gradient(to right, transparent, rgba(198, 255, 0, 0.8), transparent);
+  box-shadow: 0 0 12px rgba(198, 255, 0, 0.6);
   animation: radarScan 4s linear infinite;
   pointer-events: none;
   z-index: 10;
@@ -115,31 +155,53 @@ body {
 
 /* ── Slot selection pulse ring ── */
 @keyframes pulseBorder {
-  0%, 100% { box-shadow: 0 0 0 2px rgba(198,255,0,0.4), 0 0 18px rgba(198,255,0,0.15); }
-  50%       { box-shadow: 0 0 0 5px rgba(198,255,0,0.7), 0 0 32px rgba(198,255,0,0.35); }
+
+  0%,
+  100% {
+    box-shadow: 0 0 0 2px rgba(198, 255, 0, 0.4), 0 0 18px rgba(198, 255, 0, 0.15);
+  }
+
+  50% {
+    box-shadow: 0 0 0 5px rgba(198, 255, 0, 0.7), 0 0 32px rgba(198, 255, 0, 0.35);
+  }
 }
+
 .slot-selected-ring {
   animation: pulseBorder 1.8s ease-in-out infinite;
 }
 
 /* ── Scanner sweep on occupied slot ── */
 @keyframes occupiedSweep {
-  0%   { transform: translateX(-100%); }
-  100% { transform: translateX(200%); }
+  0% {
+    transform: translateX(-100%);
+  }
+
+  100% {
+    transform: translateX(200%);
+  }
 }
+
 .occupied-sweep::after {
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(90deg, transparent 0%, rgba(239,68,68,0.15) 50%, transparent 100%);
+  background: linear-gradient(90deg, transparent 0%, rgba(239, 68, 68, 0.15) 50%, transparent 100%);
   animation: occupiedSweep 2.5s ease-in-out infinite;
 }
 
 /* ── Number flip ── */
 @keyframes numFlip {
-  0%   { transform: translateY(100%); opacity: 0; }
-  100% { transform: translateY(0);    opacity: 1; }
+  0% {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
+
 .num-flip {
   display: inline-block;
   animation: numFlip 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
@@ -150,30 +212,53 @@ body {
   overflow: hidden;
   white-space: nowrap;
 }
+
 .ticker-content {
   display: inline-flex;
   white-space: nowrap;
   animation: ticker 32s linear infinite;
 }
+
 @keyframes ticker {
-  0%   { transform: translateX(0); }
-  100% { transform: translateX(-50%); }
+  0% {
+    transform: translateX(0);
+  }
+
+  100% {
+    transform: translateX(-50%);
+  }
 }
 
 /* ── Avatar online ring ── */
 @keyframes avatarRing {
-  0%, 100% { box-shadow: 0 0 0 2px rgba(198,255,0,0.35); }
-  50%       { box-shadow: 0 0 0 3px rgba(198,255,0,0.7); }
+
+  0%,
+  100% {
+    box-shadow: 0 0 0 2px rgba(198, 255, 0, 0.35);
+  }
+
+  50% {
+    box-shadow: 0 0 0 3px rgba(198, 255, 0, 0.7);
+  }
 }
+
 .avatar-online {
   animation: avatarRing 2.5s ease-in-out infinite;
 }
 
 /* ── Slot entry stagger ── */
 @keyframes slotFadeIn {
-  from { opacity: 0; transform: translateY(14px) scale(0.94); }
-  to   { opacity: 1; transform: translateY(0) scale(1); }
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.94);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
+
 .slot-enter {
   opacity: 0;
   animation: slotFadeIn 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
@@ -181,9 +266,17 @@ body {
 
 /* ── Booking card stagger ── */
 @keyframes cardSlideIn {
-  from { opacity: 0; transform: translateX(24px); }
-  to   { opacity: 1; transform: translateX(0); }
+  from {
+    opacity: 0;
+    transform: translateX(24px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
+
 .card-stagger {
   opacity: 0;
   animation: cardSlideIn 0.35s ease forwards;

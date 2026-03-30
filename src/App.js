@@ -41,9 +41,9 @@ function App() {
 
   if (showAuth && !session) {
     return (
-      <AuthPage 
-        onAuthSuccess={() => setShowAuth(false)} 
-        onBack={() => setShowAuth(false)} 
+      <AuthPage
+        onAuthSuccess={() => setShowAuth(false)}
+        onBack={() => setShowAuth(false)}
       />
     );
   }
@@ -53,10 +53,10 @@ function App() {
   }
 
   return (
-    <Dashboard 
+    <Dashboard
       onLogout={async () => {
         await supabase.auth.signOut();
-      }} 
+      }}
       session={session}
     />
   );
