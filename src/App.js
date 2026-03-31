@@ -6,9 +6,9 @@ import { supabase } from "./supabaseClient";
 import "./index.css";
 
 function App() {
-  const [session, setSession] = useState(null);
+  const [session, setSession]   = useState(null);
   const [showAuth, setShowAuth] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading]   = useState(true);
 
   useEffect(() => {
     supabase.auth.getSession()
@@ -17,13 +17,11 @@ function App() {
         setLoading(false);
       })
       .catch((err) => {
-        console.error("Supabase session error (Check your .env setup):", err);
+        console.error("Supabase session error:", err);
         setLoading(false);
       });
 
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
       if (session) setShowAuth(false);
     });
@@ -54,9 +52,7 @@ function App() {
 
   return (
     <Dashboard
-      onLogout={async () => {
-        await supabase.auth.signOut();
-      }}
+      onLogout={async () => { await supabase.auth.signOut(); }}
       session={session}
     />
   );

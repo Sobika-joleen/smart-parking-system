@@ -4,16 +4,19 @@ import { calculateOvertime } from "../services/paymentService";
 // ── Helpers ───────────────────────────────────────────────────────────────────
 const getStatusColor = (status) => {
   switch (status) {
-    case "confirmed": return "text-orange-400 bg-orange-500/10 border-orange-500/20";
-    case "reserved":  return "text-yellow-400 bg-yellow-500/10 border-yellow-500/20";
-    case "completed": return "text-[#c6ff00] bg-[#c6ff00]/10 border-[#c6ff00]/20";
-    case "active":    return "text-orange-400 bg-orange-500/10 border-orange-500/20";
-    default:          return "text-gray-500 bg-gray-500/10 border-white/5";
+    case "confirmed":         return "text-orange-400 bg-orange-500/10 border-orange-500/20";
+    case "reserved":          return "text-yellow-400 bg-yellow-500/10 border-yellow-500/20";
+    case "parked_unverified": return "text-blue-400 bg-blue-500/10 border-blue-500/20";
+    case "completed":         return "text-[#c6ff00] bg-[#c6ff00]/10 border-[#c6ff00]/20";
+    case "active":            return "text-orange-400 bg-orange-500/10 border-orange-500/20";
+    default:                  return "text-gray-500 bg-gray-500/10 border-white/5";
   }
 };
 
 const statusLabel = (s) => {
-  if (s === "confirmed") return "Active";
+  if (s === "confirmed")         return "Active";
+  if (s === "reserved")          return "Booked";
+  if (s === "parked_unverified") return "Verifying…";
   return s.charAt(0).toUpperCase() + s.slice(1);
 };
 
@@ -67,24 +70,16 @@ const OvertimeBadge = ({ expectedEnd }) => {
 };
 
 // ── Active Booking Card ───────────────────────────────────────────────────────
-const ActiveBookingCard = ({ b, cancelBooking, activateBooking, completeBooking, index }) => {
-  const isReserved  = b.status === "reserved";
-  const isConfirmed = b.status === "confirmed";
+const ActiveBookingCard = ({ b, cancelBooking, activateBooking, completeBooking, onOpenVerify, index }) => {
+  const isReserved   = b.status === "reserved";
+  const isConfirmed  = b.status === "confirmed";
+  const isVerifying  = b.status === "parked_unverified";
   const [acting, setActing] = useState(false);
 
-  const handleActivate = async () => {
-    setActing(true);
-    await activateBooking(b.id);
-    setActing(false);
-  };
+  const handleActivate = async () => { setActing(true); await activateBooking(b.id); setActing(false); };
+  const handleComplete = async () => { setActing(true); await completeBooking(b.id); setActing(false); };
 
-  const handleComplete = async () => {
-    setActing(true);
-    await completeBooking(b.id);
-    setActing(false);
-  };
-
-  const stripeColor = isConfirmed ? "bg-orange-500" : "bg-yellow-500";
+  const stripeColor = isConfirmed ? "bg-orange-500" : isVerifying ? "bg-blue-500" : "bg-yellow-500";
 
   return (
     <div
@@ -145,6 +140,15 @@ const ActiveBookingCard = ({ b, cancelBooking, activateBooking, completeBooking,
               {acting ? "…" : "Car Arrived"}
             </button>
           )}
+          {isVerifying && (
+            <button
+              onClick={() => onOpenVerify?.(b)}
+              className="px-3 py-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 text-[10px] font-bold tracking-wide border border-blue-500/20 hover:border-blue-500/40 transition-all animate-pulse"
+              title="Open verification modal"
+            >
+              Verify Now
+            </button>
+          )}
           {isConfirmed && (
             <button
               onClick={handleComplete}
@@ -155,7 +159,7 @@ const ActiveBookingCard = ({ b, cancelBooking, activateBooking, completeBooking,
               {acting ? "…" : "Exit & Pay"}
             </button>
           )}
-          {isReserved && (
+          {(isReserved || isVerifying) && (
             <button
               onClick={() => cancelBooking(b.id)}
               className="opacity-0 group-hover:opacity-100 p-1.5 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 transition-all"
@@ -235,6 +239,7 @@ const BookingHistoryPanel = ({
   deleteBooking,
   activateBooking,
   completeBooking,
+  onOpenVerify,
 }) => {
   const [visible, setVisible] = useState(false);
 
@@ -250,7 +255,7 @@ const BookingHistoryPanel = ({
   if (!isOpen && !visible) return null;
 
   const activeBookings = bookings.filter(
-    (b) => b.status === "reserved" || b.status === "confirmed"
+    (b) => b.status === "reserved" || b.status === "parked_unverified" || b.status === "confirmed"
   );
   const pastBookings = bookings.filter(
     (b) => b.status === "cancelled" || b.status === "completed"
@@ -315,6 +320,7 @@ const BookingHistoryPanel = ({
                     cancelBooking={cancelBooking}
                     activateBooking={activateBooking}
                     completeBooking={completeBooking}
+                    onOpenVerify={onOpenVerify}
                   />
                 ))
               )}

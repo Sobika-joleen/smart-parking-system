@@ -47,7 +47,8 @@ const Sidebar = ({
   onWalletClick,
   session,
 }) => {
-  const confirmedCount = bookings.filter((b) => b.status === "confirmed").length;
+  const confirmedCount    = bookings.filter((b) => b.status === "confirmed" || b.status === "parked_unverified").length;
+  const unverifiedCount  = bookings.filter((b) => b.status === "parked_unverified").length;
   const [activeItem, setActiveItem]   = useState("dashboard");
   const [logoHovered, setLogoHovered] = useState(false);
 
@@ -69,6 +70,7 @@ const Sidebar = ({
       icon: <HistoryIcon />,
       label: "History",
       badge: confirmedCount > 0 ? confirmedCount : null,
+      badgePulse: unverifiedCount > 0,
       onClick: onBookingsClick,
     },
     {
@@ -112,7 +114,11 @@ const Sidebar = ({
                   if (item.onClick) item.onClick();
                 }}
                 className={`sidebar-icon w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-200 relative flex-col gap-0.5 ${
-                  activeItem === item.id
+                  item.adminStyle
+                    ? activeItem === item.id
+                      ? "bg-red-500/20 text-red-400 scale-105 border border-red-500/30"
+                      : "text-red-400/60 hover:text-red-400 hover:bg-red-500/10 border border-transparent hover:border-red-500/20"
+                    : activeItem === item.id
                     ? "bg-[rgba(198,255,0,0.12)] text-[#c6ff00] scale-105"
                     : "text-gray-600 hover:text-white hover:bg-white/5"
                 }`}
@@ -124,9 +130,11 @@ const Sidebar = ({
                     {item.sub}
                   </span>
                 )}
-                {/* History count badge */}
+                {/* History / unverified count badge */}
                 {item.badge && (
-                  <span className="absolute -top-0.5 -right-0.5 w-4 h-4 rounded-full bg-[#c6ff00] text-[#0f0f0f] text-[8px] font-black flex items-center justify-center animate-bounce">
+                  <span className={`absolute -top-0.5 -right-0.5 w-4 h-4 rounded-full bg-[#c6ff00] text-[#0f0f0f] text-[8px] font-black flex items-center justify-center ${
+                    item.badgePulse ? "animate-ping" : "animate-bounce"
+                  }`}>
                     {item.badge}
                   </span>
                 )}
@@ -135,6 +143,9 @@ const Sidebar = ({
                 {item.label}
                 {item.id === "wallet" && walletBalance > 0 && (
                   <span className="text-[#c6ff00] font-bold ml-1">₹{walletBalance.toFixed(2)}</span>
+                )}
+                {item.hint && (
+                  <span className="ml-2 text-[9px] text-gray-500 bg-white/5 px-1 rounded">{item.hint}</span>
                 )}
               </span>
             </div>
