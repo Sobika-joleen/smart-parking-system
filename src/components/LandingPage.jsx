@@ -105,7 +105,7 @@ const LandingPage = ({ onLogin, onSecurityAccess }) => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-[#080808] text-white font-['Inter'] overflow-x-hidden overflow-y-auto selection:bg-[#c6ff00] selection:text-black">
+    <div className="h-screen w-screen bg-[#080808] text-white font-['Inter'] overflow-x-hidden overflow-y-auto selection:bg-[#c6ff00] selection:text-black">
 
       {/* Subtle grid background */}
       <div className="fixed inset-0 pointer-events-none"
@@ -187,7 +187,7 @@ const LandingPage = ({ onLogin, onSecurityAccess }) => {
             </div>
 
             {/* CTAs */}
-            <div className="flex items-center gap-4">
+            <div className="flex flex-wrap items-center gap-4">
               <button
                 onClick={onLogin}
                 className="group flex items-center gap-2.5 px-8 py-3.5 bg-[#c6ff00] text-[#0a0a0a] rounded-xl font-bold text-sm tracking-wide hover:shadow-[0_0_28px_rgba(198,255,0,0.55)] transition-all duration-200 hover:scale-[1.03] active:scale-95"
@@ -203,7 +203,7 @@ const LandingPage = ({ onLogin, onSecurityAccess }) => {
             </div>
 
             {/* Stats row */}
-            <div className="flex items-center gap-8 pt-4 border-t border-white/[0.06]">
+            <div className="flex flex-wrap items-center gap-6 sm:gap-8 pt-4 border-t border-white/[0.06]">
               {[
                 { val: 247, label: "Spots managed", suffix: "" },
                 { val: 1342, label: "Bookings today", suffix: "" },

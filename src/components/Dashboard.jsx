@@ -13,7 +13,6 @@ import { useWallet } from "../hooks/useWallet";
 import { useNotifications } from "../hooks/useNotifications";
 import BookingHistoryPanel from "./BookingHistoryPanel";
 import WalletPanel from "./WalletPanel";
-import SecurityPortal from "./SecurityPortal";
 import {
   calculateOvertime,
   calculateEarlyExitRefund,
@@ -152,7 +151,6 @@ const Dashboard = ({ onLogout, session, onOpenAdmin }) => {
   const [ticketModalOpen, setTicketModalOpen]      = useState(false);
   const [lastBookingData, setLastBookingData]      = useState(null);
   const [verifyModal, setVerifyModal]              = useState(null); // { bookingId, slotId, level, vehicleNumber, name }
-  const [securityOpen, setSecurityOpen]            = useState(false);
   const [notifCount, setNotifCount]                = useState(0);
   const [simulatingSensor, setSimulatingSensor]    = useState(false);
 
@@ -564,26 +562,25 @@ const Dashboard = ({ onLogout, session, onOpenAdmin }) => {
         onLogout={onLogout}
         walletBalance={walletBalance}
         onWalletClick={() => setWalletOpen(!walletOpen)}
-        onSecurityClick={() => setSecurityOpen(!securityOpen)}
         session={session}
         onAdminClick={onOpenAdmin}
       />
 
       {/* ── Main layout ── */}
-      <div className="flex-1 flex overflow-hidden min-w-0">
+      <div className="flex-1 flex flex-col lg:flex-row overflow-y-auto lg:overflow-hidden min-w-0">
 
         {/* ── LEFT PANEL ── */}
-        <main className="flex flex-col flex-1 max-w-[650px] min-w-[450px] flex-shrink-0 overflow-y-auto p-6 lg:p-8 gap-5"
+        <main className="flex flex-col w-full lg:flex-1 lg:max-w-[650px] lg:min-w-[450px] flex-shrink-0 lg:overflow-y-auto p-4 sm:p-6 lg:p-8 gap-5"
           style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
 
           {/* Header */}
-          <header className="flex items-center justify-between flex-shrink-0">
+          <header className="flex flex-wrap items-center justify-between flex-shrink-0 gap-4">
             <div>
               <div className="flex items-center gap-2.5">
-                <h1 className="text-lg font-bold text-white tracking-tight">Central Parking Tower</h1>
+                <h1 className="text-base sm:text-lg font-bold text-white tracking-tight">Central Parking Tower</h1>
                 <LiveBadge />
               </div>
-              <p className="text-xs text-gray-600 mt-0.5">Downtown District · Block B-7</p>
+              <p className="text-[10px] sm:text-xs text-gray-600 mt-0.5">Downtown District · Block B-7</p>
             </div>
             <div className="flex items-center gap-2">
               <LiveClock />
@@ -767,7 +764,7 @@ const Dashboard = ({ onLogout, session, onOpenAdmin }) => {
           <div className="flex-1" />
 
           {/* Booking Bar */}
-          <div className="flex-shrink-0 bg-[#161616] border border-white/[0.08] rounded-2xl px-4 py-3 flex items-center justify-between gap-3 relative overflow-hidden">
+          <div className="flex-shrink-0 bg-[#161616] border border-white/[0.08] rounded-2xl px-4 py-3 flex flex-wrap items-center justify-between gap-3 relative overflow-hidden">
             {selectedSlot && selectedTimes.length > 0 && (
               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-[#c6ff00]/5 to-transparent animate-[sweep_3s_ease-in-out_infinite] pointer-events-none" />
             )}
@@ -804,7 +801,7 @@ const Dashboard = ({ onLogout, session, onOpenAdmin }) => {
         </main>
 
         {/* ── RIGHT PANEL – Tesla Map ── */}
-        <div className="flex-1 p-4 pl-0 min-w-0">
+        <div className="w-full lg:flex-1 p-4 lg:pl-0 min-w-0 min-h-[450px] lg:min-h-0">
           <TeslaMapPanel
             slots={slots}
             selectedSlot={selectedSlot}
@@ -865,10 +862,6 @@ const Dashboard = ({ onLogout, session, onOpenAdmin }) => {
       />
 
       {/* Admin Panel is now a separate page, AdminOverridePanel removed from DOM */}
-
-      {securityOpen && (
-        <SecurityPortal onClose={() => setSecurityOpen(false)} />
-      )}
 
       {/* ── Toasts ── */}
       <Toast toasts={toasts} removeToast={removeToast} />

@@ -33,7 +33,7 @@ function App() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center">
+      <div className="h-screen w-screen bg-[#0a0a0a] flex items-center justify-center">
         <div className="w-8 h-8 rounded-full border-t-2 border-[#c6ff00] animate-spin" />
       </div>
     );

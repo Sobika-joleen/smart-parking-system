@@ -214,8 +214,8 @@ const TeslaMapPanel = ({ slots, selectedSlot, activeLevel, occupiedCount }) => {
   const distance = targetPos ? 20 + targetIdx * 8 : 0;
   const occupancyPct = Math.round((occupiedCount / Math.max(slots.length, 1)) * 100);
 
-  // Derive bottom row from actual slot data (mirror)
-  const bottomSlotStatuses = slots.map((s) => s.status);
+  // Bottom row is purely decorative and unbookable; generate static statuses based on level so it doesn't mirror the active row
+  const bottomSlotStatuses = slots.map((_, i) => ((i + activeLevel) % 3 === 0) ? "occupied" : "available");
 
   return (
     <div className="relative flex flex-col h-full bg-[#0d0d0d] rounded-2xl overflow-hidden border border-white/5">

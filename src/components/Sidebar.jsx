@@ -22,12 +22,6 @@ const WalletIcon = () => (
   </svg>
 );
 
-const SecurityIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="w-5 h-5">
-    <path strokeLinecap="round" strokeLinejoin="round" d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-  </svg>
-);
-
 const SettingsIcon = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="w-5 h-5">
     <circle cx="12" cy="12" r="3"/>
@@ -51,7 +45,6 @@ const Sidebar = ({
   onLogout,
   walletBalance = 0,
   onWalletClick,
-  onSecurityClick,
   session,
 }) => {
   const confirmedCount    = bookings.filter((b) => b.status === "confirmed" || b.status === "parked_unverified").length;
@@ -86,12 +79,6 @@ const Sidebar = ({
       label: "Wallet",
       sub: walletBalance > 0 ? `₹${walletBalance % 1 === 0 ? walletBalance : walletBalance.toFixed(0)}` : null,
       onClick: onWalletClick,
-    },
-    {
-      id: "security",
-      icon: <SecurityIcon />,
-      label: "Security",
-      onClick: onSecurityClick,
     },
   ];
 

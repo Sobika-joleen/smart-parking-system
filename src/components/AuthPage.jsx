@@ -50,7 +50,7 @@ const AuthPage = ({ onAuthSuccess, onBack }) => {
   };
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center p-4 font-['Inter'] relative overflow-hidden">
+    <div className="h-screen w-screen bg-[#0a0a0a] flex items-center justify-center py-16 px-4 font-['Inter'] relative overflow-y-auto overflow-x-hidden">
       <Toast toasts={toasts} removeToast={removeToast} />
       
       {/* Background decoration */}
