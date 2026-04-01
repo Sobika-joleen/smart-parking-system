@@ -13,6 +13,7 @@ import { useWallet } from "../hooks/useWallet";
 import { useNotifications } from "../hooks/useNotifications";
 import BookingHistoryPanel from "./BookingHistoryPanel";
 import WalletPanel from "./WalletPanel";
+import SecurityPortal from "./SecurityPortal";
 import {
   calculateOvertime,
   calculateEarlyExitRefund,
@@ -151,6 +152,7 @@ const Dashboard = ({ onLogout, session, onOpenAdmin }) => {
   const [ticketModalOpen, setTicketModalOpen]      = useState(false);
   const [lastBookingData, setLastBookingData]      = useState(null);
   const [verifyModal, setVerifyModal]              = useState(null); // { bookingId, slotId, level, vehicleNumber, name }
+  const [securityOpen, setSecurityOpen]            = useState(false);
   const [notifCount, setNotifCount]                = useState(0);
   const [simulatingSensor, setSimulatingSensor]    = useState(false);
 
@@ -562,6 +564,7 @@ const Dashboard = ({ onLogout, session, onOpenAdmin }) => {
         onLogout={onLogout}
         walletBalance={walletBalance}
         onWalletClick={() => setWalletOpen(!walletOpen)}
+        onSecurityClick={() => setSecurityOpen(!securityOpen)}
         session={session}
         onAdminClick={onOpenAdmin}
       />
@@ -862,6 +865,10 @@ const Dashboard = ({ onLogout, session, onOpenAdmin }) => {
       />
 
       {/* Admin Panel is now a separate page, AdminOverridePanel removed from DOM */}
+
+      {securityOpen && (
+        <SecurityPortal onClose={() => setSecurityOpen(false)} />
+      )}
 
       {/* ── Toasts ── */}
       <Toast toasts={toasts} removeToast={removeToast} />

@@ -2,12 +2,14 @@ import React, { useState, useEffect } from "react";
 import Dashboard from "./components/Dashboard";
 import LandingPage from "./components/LandingPage";
 import AuthPage from "./components/AuthPage";
+import SecurityPortal from "./components/SecurityPortal";
 import { supabase } from "./supabaseClient";
 import "./index.css";
 
 function App() {
   const [session, setSession]   = useState(null);
   const [showAuth, setShowAuth] = useState(false);
+  const [isSecurityMode, setIsSecurityMode] = useState(false);
   const [loading, setLoading]   = useState(true);
 
   useEffect(() => {
@@ -37,6 +39,10 @@ function App() {
     );
   }
 
+  if (isSecurityMode) {
+    return <SecurityPortal onClose={() => setIsSecurityMode(false)} />;
+  }
+
   if (showAuth && !session) {
     return (
       <AuthPage
@@ -47,7 +53,7 @@ function App() {
   }
 
   if (!session) {
-    return <LandingPage onLogin={() => setShowAuth(true)} />;
+    return <LandingPage onLogin={() => setShowAuth(true)} onSecurityAccess={() => setIsSecurityMode(true)} />;
   }
 
   return (

@@ -82,8 +82,22 @@ const FeatureCard = ({ icon, title, desc, stat, statLabel }) => (
 );
 
 // ── Main Landing Page ─────────────────────────────────────────────────────────
-const LandingPage = ({ onLogin }) => {
+const LandingPage = ({ onLogin, onSecurityAccess }) => {
   const [mounted, setMounted] = useState(false);
+  const [showSecurityLogin, setShowSecurityLogin] = useState(false);
+  const [secUser, setSecUser] = useState("");
+  const [secPass, setSecPass] = useState("");
+  const [loginError, setLoginError] = useState("");
+
+  const handleSecuritySubmit = (e) => {
+    e.preventDefault();
+    if (secUser === "rheya" && secPass === "rheya123") {
+      setShowSecurityLogin(false);
+      onSecurityAccess();
+    } else {
+      setLoginError("Invalid security credentials");
+    }
+  };
 
   useEffect(() => {
     const t = setTimeout(() => setMounted(true), 80);
@@ -120,12 +134,22 @@ const LandingPage = ({ onLogin }) => {
           ))}
         </div>
 
-        <button
-          onClick={onLogin}
-          className="hidden md:flex items-center gap-2 px-5 py-2 rounded-lg bg-[#c6ff00] text-[#0a0a0a] text-xs font-bold uppercase tracking-widest hover:shadow-[0_0_20px_rgba(198,255,0,0.5)] transition-all duration-200 hover:scale-105 active:scale-95"
-        >
-          Open Dashboard
-        </button>
+        <div className="flex items-center gap-4">
+          <button 
+            onClick={() => setShowSecurityLogin(true)}
+            className="hidden md:flex items-center gap-1.5 px-4 py-2 rounded-lg bg-white/[0.05] border border-white/10 text-xs font-bold uppercase tracking-widest hover:bg-white/10 hover:border-[#c6ff00]/40 transition-all text-white group"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4 text-gray-500 group-hover:text-[#c6ff00] transition-colors"><path strokeLinecap="round" strokeLinejoin="round" d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>
+            Security Login
+          </button>
+          
+          <button
+            onClick={onLogin}
+            className="hidden md:flex items-center gap-2 px-5 py-2 rounded-lg bg-[#c6ff00] text-[#0a0a0a] text-xs font-bold uppercase tracking-widest hover:shadow-[0_0_20px_rgba(198,255,0,0.5)] transition-all duration-200 hover:scale-105 active:scale-95"
+          >
+            Open Dashboard
+          </button>
+        </div>
       </nav>
 
       {/* ── Hero ── */}
@@ -361,8 +385,54 @@ const LandingPage = ({ onLogin }) => {
           </div>
           <span className="text-xs text-gray-600 font-semibold">SmartPark © 2026</span>
         </div>
-        <span className="text-xs text-gray-700">IoT-Powered Precision Parking</span>
+        <div className="flex items-center gap-4">
+          <span className="text-xs text-gray-700 hidden sm:inline-block">IoT-Powered Precision Parking</span>
+        </div>
       </footer>
+
+      {/* ── Security Login Modal ── */}
+      {showSecurityLogin && (
+        <div className="fixed inset-0 z-50 bg-[#0a0a0a]/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="w-full max-w-sm bg-[#111] border border-white/10 rounded-2xl p-6 shadow-2xl relative">
+            <button 
+              onClick={() => { setShowSecurityLogin(false); setLoginError(""); }}
+              className="absolute top-4 right-4 text-gray-500 hover:text-white"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+            </button>
+            <h3 className="text-lg font-bold text-white mb-2 flex items-center gap-2">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#c6ff00" strokeWidth="2" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>
+              Security Login
+            </h3>
+            <p className="text-xs text-gray-500 mb-5">Restricted access area. Authenticate to enter.</p>
+            
+            <form onSubmit={handleSecuritySubmit} className="flex flex-col gap-4">
+              <input 
+                type="text" 
+                placeholder="Username" 
+                value={secUser}
+                onChange={(e) => { setSecUser(e.target.value); setLoginError(""); }}
+                className="w-full bg-[#1a1a1a] border border-white/5 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-[#c6ff00]/50"
+                autoFocus
+              />
+              <input 
+                type="password" 
+                placeholder="Password" 
+                value={secPass}
+                onChange={(e) => { setSecPass(e.target.value); setLoginError(""); }}
+                className="w-full bg-[#1a1a1a] border border-white/5 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-[#c6ff00]/50"
+              />
+              {loginError && <span className="text-xs text-red-500 font-medium">{loginError}</span>}
+              <button 
+                type="submit"
+                className="w-full bg-[#c6ff00] text-black font-bold text-sm py-3 rounded-xl mt-2 hover:shadow-[0_0_15px_rgba(198,255,0,0.4)] transition-all active:scale-95"
+              >
+                Access Portal
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
