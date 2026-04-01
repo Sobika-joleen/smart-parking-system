@@ -56,11 +56,8 @@ const LEVEL_SLOTS = {
   ],
 };
 
-const TIMES = [
-  "06:00", "07:00", "08:00", "09:00", "10:00",
-  "11:00", "12:00", "13:00", "14:00", "15:00",
-  "16:00", "17:00",
-];
+// Helper: convert "HH:MM" to total minutes
+const timeToMins = (t) => { const [h, m] = t.split(":").map(Number); return h * 60 + m; };
 
 // ── Live Badge ───────────────────────────────────────────────────────────────
 const LiveBadge = () => (
@@ -140,19 +137,19 @@ const NotificationBell = ({ count, permissionStatus, onRequest }) => (
 
 // ── Main Dashboard ───────────────────────────────────────────────────────────
 const Dashboard = ({ onLogout, session, onOpenAdmin }) => {
-  const [activeLevel, setActiveLevel]              = useState(1);
-  const [slots, setSlots]                          = useState(LEVEL_SLOTS[1]);
-  const [selectedSlot, setSelectedSlot]            = useState(null);
-  const [selectedTimes, setSelectedTimes]          = useState([]);
-  const [liveStatus, setLiveStatus]                = useState([]);
-  const [modalOpen, setModalOpen]                  = useState(false);
-  const [bookingsOpen, setBookingsOpen]            = useState(false);
-  const [walletOpen, setWalletOpen]                = useState(false);
-  const [ticketModalOpen, setTicketModalOpen]      = useState(false);
-  const [lastBookingData, setLastBookingData]      = useState(null);
-  const [verifyModal, setVerifyModal]              = useState(null); // { bookingId, slotId, level, vehicleNumber, name }
-  const [notifCount, setNotifCount]                = useState(0);
-  const [simulatingSensor, setSimulatingSensor]    = useState(false);
+  const [activeLevel, setActiveLevel] = useState(1);
+  const [slots, setSlots] = useState(LEVEL_SLOTS[1]);
+  const [selectedSlot, setSelectedSlot] = useState(null);
+  const [selectedRange, setSelectedRange] = useState({ startTime: null, endTime: null });
+  const [liveStatus, setLiveStatus] = useState([]);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [bookingsOpen, setBookingsOpen] = useState(false);
+  const [walletOpen, setWalletOpen] = useState(false);
+  const [ticketModalOpen, setTicketModalOpen] = useState(false);
+  const [lastBookingData, setLastBookingData] = useState(null);
+  const [verifyModal, setVerifyModal] = useState(null); // { bookingId, slotId, level, vehicleNumber, name }
+  const [notifCount, setNotifCount] = useState(0);
+  const [simulatingSensor, setSimulatingSensor] = useState(false);
 
   const { toasts, removeToast, success, error, info } = useToast();
 
@@ -192,11 +189,11 @@ const Dashboard = ({ onLogout, session, onOpenAdmin }) => {
   } = useNotifications(session);
 
   // ── Refs ──────────────────────────────────────────────────────────────────
-  const processedSensorActionsRef  = useRef(new Set());
-  const lastLiveStatusKeyRef       = useRef(null);
-  const warnedBookingsRef          = useRef(new Set());
-  const verifyTimersRef            = useRef({}); // bookingId -> { reminder, autoConfirm }
-  const pendingVerifyRef           = useRef(new Set()); // prevent double-trigger
+  const processedSensorActionsRef = useRef(new Set());
+  const lastLiveStatusKeyRef = useRef(null);
+  const warnedBookingsRef = useRef(new Set());
+  const verifyTimersRef = useRef({}); // bookingId -> { reminder, autoConfirm }
+  const pendingVerifyRef = useRef(new Set()); // prevent double-trigger
 
   // ── Live IoT fetch ────────────────────────────────────────────────────────
   const fetchLiveData = async () => {
@@ -271,7 +268,7 @@ const Dashboard = ({ onLogout, session, onOpenAdmin }) => {
       bookings.forEach((b) => {
         if (b.status === "confirmed" && b.expectedEnd) {
           const timeLeft = new Date(b.expectedEnd).getTime() - now;
-          const warnKey  = `warn:${b.id}`;
+          const warnKey = `warn:${b.id}`;
           if (timeLeft > 0 && timeLeft <= WARN_WINDOW && !warnedBookingsRef.current.has(warnKey)) {
             warnedBookingsRef.current.add(warnKey);
             const minsLeft = Math.ceil(timeLeft / 60000);
@@ -434,31 +431,33 @@ const Dashboard = ({ onLogout, session, onOpenAdmin }) => {
       }
 
       if (res) {
-        if (res.status === "reserved")          return { ...s, status: "reserved",          reservedAt: res.reservedAt };
+        if (res.status === "reserved") return { ...s, status: "reserved", reservedAt: res.reservedAt };
         if (res.status === "parked_unverified") return { ...s, status: "parked_unverified" };
-        if (res.status === "confirmed")         return { ...s, status: "confirmed" };
+        if (res.status === "confirmed") return { ...s, status: "confirmed" };
       }
-      if (sensorOccupied)        return { ...s, status: "occupied" };
+      if (sensorOccupied) return { ...s, status: "occupied" };
       if (s.status === "noparking") return { ...s, status: "noparking" };
       return { ...s, status: "available" };
     });
 
     setSlots(mappedSlots);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeLevel, liveStatus, bookings, getActiveReservation, reservedBookings,
-      markParkedUnverified, cancelBooking, success, info, triggerVerificationFlow]);
+    markParkedUnverified, cancelBooking, success, info, triggerVerificationFlow]);
 
   useEffect(() => { setSelectedSlot(null); }, [activeLevel]);
 
   // ── Slot / Time interactions ──────────────────────────────────────────────
-  const handleSlotClick  = (slotId) => setSelectedSlot((prev) => (prev === slotId ? null : slotId));
-  const toggleTime       = (time)   => setSelectedTimes((prev) =>
-    prev.includes(time) ? prev.filter((t) => t !== time) : [...prev, time]);
-  const clearAllTimes    = ()       => setSelectedTimes([]);
+  const handleSlotClick = (slotId) => setSelectedSlot((prev) => (prev === slotId ? null : slotId));
+  const handleRangeChange = (range) => setSelectedRange(range);
+  const clearRange = () => setSelectedRange({ startTime: null, endTime: null });
 
-  const totalPrice     = selectedTimes.length * BASE_RATE_PER_HOUR;
+  // Compute decimal duration in hours from the time range
+  const rangeDurationMins = selectedRange.startTime && selectedRange.endTime
+    ? Math.max(0, timeToMins(selectedRange.endTime) - timeToMins(selectedRange.startTime))
+    : 0;
+  const totalPrice = (rangeDurationMins / 60) * BASE_RATE_PER_HOUR;
   const availableCount = slots.filter((s) => s.status === "available").length;
-  const occupiedCount  = slots.filter((s) => s.status === "occupied").length;
+  const occupiedCount = slots.filter((s) => s.status === "occupied").length;
 
   const freeByLevel = Object.fromEntries(
     Object.entries(LEVEL_SLOTS).map(([lvl, slotsArr]) => {
@@ -475,19 +474,20 @@ const Dashboard = ({ onLogout, session, onOpenAdmin }) => {
     })
   );
 
-  const bookBtnReady = selectedSlot && selectedTimes.length > 0;
-  const bookBtnLabel = !selectedSlot ? "Select a Spot" : selectedTimes.length === 0 ? "Pick a Time" : "Book Place";
+  const rangeValid = !!(selectedRange.startTime && selectedRange.endTime && rangeDurationMins > 0);
+  const bookBtnReady = selectedSlot && rangeValid;
+  const bookBtnLabel = !selectedSlot ? "Select a Spot" : !rangeValid ? "Pick a Time" : "Book Place";
 
   const handleOpenModal = () => {
-    if (!selectedSlot)          return error("No spot selected", "Please choose an available parking spot first.");
-    if (selectedTimes.length === 0) return error("No time selected", "Please select at least one hour.");
+    if (!selectedSlot) return error("No spot selected", "Please choose an available parking spot first.");
+    if (!rangeValid) return error("No time selected", "Please choose a valid start and end time.");
     setModalOpen(true);
   };
 
   // ── Booking Confirm (with payment) ────────────────────────────────────────
   const handleConfirmBooking = async ({ total, timeRange, duration, name, vehicleNumber, paymentMethod }) => {
-    const fieldIndex  = activeLevel === 1 ? LEVEL_SLOTS[1].findIndex((s) => s.id === selectedSlot) : 0;
-    const expectedEnd = new Date(Date.now() + duration * 3600000).toISOString();
+    const fieldIndex = activeLevel === 1 ? LEVEL_SLOTS[1].findIndex((s) => s.id === selectedSlot) : 0;
+    const expectedEnd = new Date(Date.now() + duration * 60 * 60 * 1000).toISOString();
 
     try {
       if (paymentMethod === "wallet") {
@@ -496,7 +496,7 @@ const Dashboard = ({ onLogout, session, onOpenAdmin }) => {
       try {
         await addBooking({
           slotId: selectedSlot, fieldIndex, level: activeLevel,
-          name, vehicleNumber, times: selectedTimes, timeRange,
+          name, vehicleNumber, times: [], timeRange,
           duration, total, paymentMethod, amountPaid: total, expectedEnd,
         });
       } catch (bookingErr) {
@@ -545,10 +545,10 @@ const Dashboard = ({ onLogout, session, onOpenAdmin }) => {
     setTicketModalOpen(false);
     success(`Slot Reserved! 🟡`, `Waiting for ${lastBookingData?.vehicleNumber} at ${lastBookingData?.slotId}.`);
     setSelectedSlot(null);
-    setSelectedTimes([]);
+    setSelectedRange({ startTime: null, endTime: null });
   };
 
-  const hasReserved  = reservedBookings.some((b) => b.userId === session?.user?.id);
+  const hasReserved = reservedBookings.some((b) => b.userId === session?.user?.id);
 
   // ─────────────────────────────────────────────────────────────────────────
   return (
@@ -598,8 +598,8 @@ const Dashboard = ({ onLogout, session, onOpenAdmin }) => {
                   }
                 }}
               />
-              <StatChip label="Free"  value={availableCount} color="text-[#c6ff00]" bg="bg-[#c6ff00]/5" />
-              <StatChip label="Taken" value={occupiedCount}  color="text-red-400"   bg="bg-red-500/5" />
+              <StatChip label="Free" value={availableCount} color="text-[#c6ff00]" bg="bg-[#c6ff00]/5" />
+              <StatChip label="Taken" value={occupiedCount} color="text-red-400" bg="bg-red-500/5" />
             </div>
           </header>
 
@@ -609,11 +609,10 @@ const Dashboard = ({ onLogout, session, onOpenAdmin }) => {
               <button
                 key={lvl}
                 onClick={() => setActiveLevel(lvl)}
-                className={`flex flex-col items-center px-3 py-1.5 rounded-xl text-xs font-bold border transition-all duration-200 ${
-                  activeLevel === lvl
+                className={`flex flex-col items-center px-3 py-1.5 rounded-xl text-xs font-bold border transition-all duration-200 ${activeLevel === lvl
                     ? "bg-[#c6ff00] text-[#0f0f0f] border-[#c6ff00] shadow-[0_0_14px_rgba(198,255,0,0.35)]"
                     : "bg-[#161616] text-gray-500 border-white/[0.08] hover:border-[#c6ff00]/40 hover:text-[#c6ff00]"
-                }`}
+                  }`}
               >
                 <span>Level {lvl}</span>
                 <span className={`text-[8px] font-semibold mt-0.5 ${activeLevel === lvl ? "text-[#0f0f0f]/70" : "text-gray-600"}`}>
@@ -673,10 +672,9 @@ const Dashboard = ({ onLogout, session, onOpenAdmin }) => {
           {/* Time Selector */}
           <div className="flex-shrink-0">
             <TimeSelector
-              times={TIMES}
-              selectedTimes={selectedTimes}
-              onToggle={toggleTime}
-              onClearAll={clearAllTimes}
+              selectedRange={selectedRange}
+              onRangeChange={handleRangeChange}
+              onClear={clearRange}
             />
           </div>
 
@@ -712,12 +710,11 @@ const Dashboard = ({ onLogout, session, onOpenAdmin }) => {
                       <span className="text-[9px] text-gray-400 font-semibold uppercase tracking-widest truncate">{b.vehicleNumber}</span>
                     </div>
                     <div className="flex items-center gap-2 flex-shrink-0">
-                      <span className={`text-[9px] font-bold px-2 py-0.5 rounded-md tracking-wider uppercase ${
-                        b.status === "confirmed"         ? "bg-orange-500/10 text-orange-400 border border-orange-500/20" :
-                        b.status === "parked_unverified" ? "bg-blue-500/10 text-blue-400 border border-blue-500/20 animate-pulse" :
-                        b.status === "reserved"          ? "bg-yellow-500/10 text-yellow-400 border border-yellow-500/20" :
-                        "bg-gray-500/10 text-gray-400 border border-white/5"
-                      }`}>
+                      <span className={`text-[9px] font-bold px-2 py-0.5 rounded-md tracking-wider uppercase ${b.status === "confirmed" ? "bg-orange-500/10 text-orange-400 border border-orange-500/20" :
+                          b.status === "parked_unverified" ? "bg-blue-500/10 text-blue-400 border border-blue-500/20 animate-pulse" :
+                            b.status === "reserved" ? "bg-yellow-500/10 text-yellow-400 border border-yellow-500/20" :
+                              "bg-gray-500/10 text-gray-400 border border-white/5"
+                        }`}>
                         {b.status === "confirmed" ? "Active" : b.status === "parked_unverified" ? "Verifying…" : b.status}
                       </span>
                       {/* Re-open verification modal */}
@@ -751,13 +748,13 @@ const Dashboard = ({ onLogout, session, onOpenAdmin }) => {
             </div>
           )}
 
-          {selectedTimes.length > 0 && !selectedSlot && (
+          {rangeValid && !selectedSlot && (
             <div className="flex-shrink-0 flex items-center gap-2 px-3 py-2 bg-[#c6ff00]/5 border border-[#c6ff00]/15 rounded-xl animate-[fade-in_0.3s_ease_forwards]">
               <svg viewBox="0 0 24 24" fill="none" stroke="#c6ff00" strokeWidth="2" className="w-3.5 h-3.5 flex-shrink-0">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
               </svg>
               <span className="text-[11px] text-[#c6ff00]/70 font-medium">
-                {selectedTimes.length} hour{selectedTimes.length > 1 ? "s" : ""} selected — now pick a parking spot above
+                {selectedRange.startTime} → {selectedRange.endTime} selected — now pick a parking spot above
               </span>
             </div>
           )}
@@ -766,14 +763,18 @@ const Dashboard = ({ onLogout, session, onOpenAdmin }) => {
 
           {/* Booking Bar */}
           <div className="flex-shrink-0 bg-[#161616] border border-white/[0.08] rounded-2xl px-4 py-3 flex flex-wrap items-center justify-between gap-3 relative overflow-hidden">
-            {selectedSlot && selectedTimes.length > 0 && (
+            {selectedSlot && rangeValid && (
               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-[#c6ff00]/5 to-transparent animate-[sweep_3s_ease-in-out_infinite] pointer-events-none" />
             )}
             <div className="flex flex-col relative z-10">
               <span className="text-[10px] text-gray-600 font-medium">Total Price</span>
               <div className="flex items-baseline gap-1">
                 <AnimatedPrice value={totalPrice} />
-                {selectedTimes.length > 0 && <span className="text-[10px] text-gray-600">· {selectedTimes.length}h</span>}
+                {rangeValid && (
+                  <span className="text-[10px] text-gray-600">
+                    · {Math.floor(rangeDurationMins / 60) > 0 ? `${Math.floor(rangeDurationMins / 60)}h ` : ""}{rangeDurationMins % 60 > 0 ? `${rangeDurationMins % 60}m` : ""}
+                  </span>
+                )}
               </div>
             </div>
             {selectedSlot && (
@@ -790,11 +791,10 @@ const Dashboard = ({ onLogout, session, onOpenAdmin }) => {
             </div>
             <button
               onClick={handleOpenModal}
-              className={`px-6 py-2.5 rounded-xl font-bold text-sm transition-all duration-300 relative z-10 ${
-                bookBtnReady
+              className={`px-6 py-2.5 rounded-xl font-bold text-sm transition-all duration-300 relative z-10 ${bookBtnReady
                   ? "bg-[#c6ff00] text-[#0f0f0f] shadow-[0_0_18px_rgba(198,255,0,0.4)] hover:shadow-[0_0_28px_rgba(198,255,0,0.7)] hover:scale-105 active:scale-95"
                   : "bg-[#1e1e1e] text-gray-500 cursor-default border border-white/5"
-              }`}
+                }`}
             >
               {bookBtnLabel}
             </button>
@@ -819,7 +819,7 @@ const Dashboard = ({ onLogout, session, onOpenAdmin }) => {
         onClose={() => setModalOpen(false)}
         onConfirm={handleConfirmBooking}
         selectedSlot={selectedSlot}
-        selectedTimes={selectedTimes}
+        selectedRange={selectedRange}
         level={activeLevel}
         session={session}
         walletBalance={walletBalance}
