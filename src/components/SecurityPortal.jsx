@@ -12,7 +12,7 @@ const SecurityPortal = ({ onClose }) => {
   const [selectedTicket, setSelectedTicket] = useState(null);
   const [totalEntriesToday, setTotalEntriesToday] = useState(0);
   const [activeTab, setActiveTab] = useState("manual");
-  const { toasts, success, error, info, removeToast } = useToast();
+  const { toasts, success, error, removeToast } = useToast();
 
   const LEVEL_1_SLOTS = ["P1-01", "P1-02", "P1-03", "P1-04", "P1-05", "P1-06"];
 

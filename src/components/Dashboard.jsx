@@ -444,6 +444,7 @@ const Dashboard = ({ onLogout, session, onOpenAdmin }) => {
     });
 
     setSlots(mappedSlots);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeLevel, liveStatus, bookings, getActiveReservation, reservedBookings,
       markParkedUnverified, cancelBooking, success, info, triggerVerificationFlow]);
 
