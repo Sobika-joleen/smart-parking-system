@@ -30,8 +30,8 @@ BEGIN
   ) THEN
     CREATE POLICY "Admin can update all bookings"
       ON public.bookings FOR UPDATE
-      USING (true)  -- frontend enforces email check; this opens update for authenticated users broadly
-      WITH CHECK (true);
+      USING (auth.role() = 'authenticated')  -- frontend enforces email check; this opens update for authenticated users broadly
+      WITH CHECK (auth.role() = 'authenticated');
   END IF;
 END $$;
 
@@ -72,7 +72,7 @@ CREATE POLICY "Users can view own notification logs"
 
 CREATE POLICY "Service can insert notification logs"
   ON public.notification_logs FOR INSERT
-  WITH CHECK (true);
+  WITH CHECK (auth.role() = 'authenticated');
 
 -- ════════════════════════════════════════════════════════════════
 -- RUN COMPLETE ✅

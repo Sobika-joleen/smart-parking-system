@@ -32,7 +32,7 @@ const formatDateLabel = (offset) => {
   return d.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
 };
 
-const TimeSelector = ({ selectedTimes, onToggle, onClearAll, onDayChange }) => {
+const TimeSelector = ({ selectedRange = { startTime: null, endTime: null }, onRangeChange, onClear, onDayChange }) => {
   const now = new Date();
   const currentHour = now.getHours();
 
@@ -83,17 +83,16 @@ const TimeSelector = ({ selectedTimes, onToggle, onClearAll, onDayChange }) => {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <h3 className="text-sm font-semibold text-white">Pick a timeslot</h3>
-          {/* Clear all button */}
-          {selectedTimes.length > 0 && (
+          {(selectedRange?.startTime || selectedRange?.endTime) && (
             <button
-              onClick={onClearAll}
+              onClick={onClear}
               className="flex items-center gap-1 text-[10px] font-semibold text-gray-500 hover:text-red-400 bg-white/5 hover:bg-red-500/10 border border-white/5 hover:border-red-500/20 px-2 py-0.5 rounded-md transition-all duration-200"
             >
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-2.5 h-2.5">
                 <line x1="18" y1="6" x2="6" y2="18" strokeLinecap="round" />
                 <line x1="6" y1="6" x2="18" y2="18" strokeLinecap="round" />
               </svg>
-              Clear ({selectedTimes.length})
+              Clear
             </button>
           )}
         </div>
@@ -141,15 +140,36 @@ const TimeSelector = ({ selectedTimes, onToggle, onClearAll, onDayChange }) => {
 
       {/* Pill grid */}
       <div className="flex flex-wrap gap-2">
-        {TIMES.map((time) => (
-          <TimePill
-            key={time}
-            time={time}
-            isSelected={selectedTimes.includes(time)}
-            isPast={isPast(time)}
-            onClick={onToggle}
-          />
-        ))}
+        {TIMES.map((time) => {
+          const t2m = (t) => { const [h, m] = t.split(":").map(Number); return h * 60 + m; };
+          const handleToggle = (t) => {
+            if (!selectedRange?.startTime || (selectedRange?.startTime && selectedRange?.endTime)) {
+              if (onRangeChange) onRangeChange({ startTime: t, endTime: null });
+            } else {
+              if (t2m(t) <= t2m(selectedRange.startTime)) {
+                if (onRangeChange) onRangeChange({ startTime: t, endTime: null });
+              } else {
+                if (onRangeChange) onRangeChange({ startTime: selectedRange.startTime, endTime: t });
+              }
+            }
+          };
+          const checkSelected = (t) => {
+            if (!selectedRange?.startTime) return false;
+            if (!selectedRange?.endTime) return t === selectedRange.startTime;
+            const tMins = t2m(t);
+            return tMins >= t2m(selectedRange.startTime) && tMins <= t2m(selectedRange.endTime);
+          };
+
+          return (
+            <TimePill
+              key={time}
+              time={time}
+              isSelected={checkSelected(time)}
+              isPast={isPast(time)}
+              onClick={handleToggle}
+            />
+          );
+        })}
       </div>
     </div>
   );

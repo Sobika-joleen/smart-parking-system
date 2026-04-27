@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import axios from "axios";
 import Sidebar from "./Sidebar";
 import ParkingSlot from "./ParkingSlot";
@@ -283,8 +283,18 @@ const Dashboard = ({ onLogout, session, onOpenAdmin }) => {
     return () => clearInterval(checkWarnings);
   }, [bookings, info, fireWarning]);
 
+  // ── Clear verification timers ─────────────────────────────────────────────
+  const clearVerifyTimers = useCallback((bookingId) => {
+    const timers = verifyTimersRef.current[bookingId];
+    if (timers) {
+      clearTimeout(timers.reminderTimer);
+      clearTimeout(timers.autoTimer);
+      delete verifyTimersRef.current[bookingId];
+    }
+  }, []);
+
   // ── Trigger verification flow for a booking ───────────────────────────────
-  const triggerVerificationFlow = (booking) => {
+  const triggerVerificationFlow = useCallback((booking) => {
     const { id: bookingId, slotId, level, vehicleNumber, name } = booking;
 
     if (pendingVerifyRef.current.has(bookingId)) return;
@@ -321,38 +331,30 @@ const Dashboard = ({ onLogout, session, onOpenAdmin }) => {
     }, VERIFY_TIMEOUT_MS);
 
     verifyTimersRef.current[bookingId] = { reminderTimer, autoTimer };
-  };
-
-  const clearVerifyTimers = (bookingId) => {
-    const timers = verifyTimersRef.current[bookingId];
-    if (timers) {
-      clearTimeout(timers.reminderTimer);
-      clearTimeout(timers.autoTimer);
-      delete verifyTimersRef.current[bookingId];
-    }
-  };
+  }, [bookings, clearVerifyTimers, fireParking, fireReminder, fireAutoConf,
+      triggerReminder, autoAssignSlot, info, success, VERIFY_TIMEOUT_MS]);
 
   // ── User confirms parking ─────────────────────────────────────────────────
-  const handleConfirmParking = async (bookingId) => {
+  const handleConfirmParking = useCallback(async (bookingId) => {
     clearVerifyTimers(bookingId);
     pendingVerifyRef.current.delete(bookingId);
     await confirmParking(bookingId);
     setVerifyModal((prev) => (prev?.bookingId === bookingId ? null : prev));
     success("✅ Parking Confirmed!", "Your session is now active. Timer has started.");
     setNotifCount(0);
-  };
+  }, [clearVerifyTimers, confirmParking, success]);
 
   // ── User says wrong slot ──────────────────────────────────────────────────
-  const handleWrongSlotAction = async (bookingId) => {
+  const handleWrongSlotAction = useCallback(async (bookingId) => {
     clearVerifyTimers(bookingId);
     pendingVerifyRef.current.delete(bookingId);
     await handleWrongSlot(bookingId);
     setVerifyModal((prev) => (prev?.bookingId === bookingId ? null : prev));
     info("↩️ Re-parking Required", "Please park your vehicle in your booked slot and wait for re-detection.");
-  };
+  }, [clearVerifyTimers, handleWrongSlot, info]);
 
   // ── Auto-confirm when timer expires in modal ──────────────────────────────
-  const handleAutoConfirmFromModal = async () => {
+  const handleAutoConfirmFromModal = useCallback(async () => {
     if (!verifyModal?.bookingId) return;
     const bookingId = verifyModal.bookingId;
     clearVerifyTimers(bookingId);
@@ -361,7 +363,7 @@ const Dashboard = ({ onLogout, session, onOpenAdmin }) => {
     fireAutoConf({ slotId: verifyModal.slotId, bookingId });
     setVerifyModal(null);
     success("✅ Auto-Confirmed", `Slot ${verifyModal.slotId} activated after timer expired.`);
-  };
+  }, [verifyModal, clearVerifyTimers, autoAssignSlot, fireAutoConf, success]);
 
   // ── Simulate sensor detection (for non-IoT levels) ───────────────────────
   const handleSimulateSensor = async () => {
@@ -442,7 +444,7 @@ const Dashboard = ({ onLogout, session, onOpenAdmin }) => {
 
     setSlots(mappedSlots);
   }, [activeLevel, liveStatus, bookings, getActiveReservation, reservedBookings,
-    markParkedUnverified, cancelBooking, success, info, triggerVerificationFlow]);
+    markParkedUnverified, cancelBooking, info, triggerVerificationFlow]);
 
   useEffect(() => { setSelectedSlot(null); }, [activeLevel]);
 

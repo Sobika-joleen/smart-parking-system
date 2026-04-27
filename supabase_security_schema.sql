@@ -25,7 +25,7 @@ CREATE POLICY "Enable all access for parking_logs"
     ON public.parking_logs
     AS PERMISSIVE
     FOR ALL
-    USING (true)
-    WITH CHECK (true);
+    USING (auth.role() = 'authenticated')
+    WITH CHECK (auth.role() = 'authenticated');
 
 

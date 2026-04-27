@@ -204,18 +204,21 @@ const LastUpdated = () => {
 };
 
 // ── Main TeslaMapPanel ──────────────────────────────────────────────────────────
-const TeslaMapPanel = ({ slots, selectedSlot, activeLevel, occupiedCount }) => {
+const TeslaMapPanel = ({ slots = [], selectedSlot, activeLevel, occupiedCount = 0 }) => {
   const topRow = SLOT_POSITIONS.top;
   const bottomRow = SLOT_POSITIONS.bottom;
 
-  const targetIdx = selectedSlot ? slots.findIndex((s) => s.id === selectedSlot) : -1;
+  // Guard: slots must be a non-empty array before we do any array ops
+  const safeSlots = Array.isArray(slots) ? slots : [];
+
+  const targetIdx = selectedSlot ? safeSlots.findIndex((s) => s.id === selectedSlot) : -1;
   const targetPos = targetIdx >= 0 ? topRow[targetIdx] : null;
   const navPath = buildPath(targetPos);
   const distance = targetPos ? 20 + targetIdx * 8 : 0;
-  const occupancyPct = Math.round((occupiedCount / Math.max(slots.length, 1)) * 100);
+  const occupancyPct = Math.round((occupiedCount / Math.max(safeSlots.length, 1)) * 100);
 
   // Bottom row is purely decorative and unbookable; generate static statuses based on level so it doesn't mirror the active row
-  const bottomSlotStatuses = slots.map((_, i) => ((i + activeLevel) % 3 === 0) ? "occupied" : "available");
+  const bottomSlotStatuses = safeSlots.map((_, i) => ((i + activeLevel) % 3 === 0) ? "occupied" : "available");
 
   return (
     <div className="relative flex flex-col h-full bg-[#0d0d0d] rounded-2xl overflow-hidden border border-white/5">
@@ -241,7 +244,7 @@ const TeslaMapPanel = ({ slots, selectedSlot, activeLevel, occupiedCount }) => {
         <div className="flex flex-col items-end gap-1.5">
           <div className="bg-[#161616] border border-white/[0.08] rounded-xl px-2.5 py-2 flex flex-col items-center gap-1.5">
             <div className="flex gap-1">
-              {slots.map((slot, i) => {
+              {safeSlots.map((slot, i) => {
                 const isSel = slot.id === selectedSlot;
                 const isRes = slot.status === "reserved";
                 const isOcc = slot.status === "occupied" || slot.status === "confirmed";
@@ -416,8 +419,8 @@ const TeslaMapPanel = ({ slots, selectedSlot, activeLevel, occupiedCount }) => {
             value={occupancyPct} max={100} label="Occupancy" unit="%"
             color={occupancyPct > 75 ? "#ef4444" : occupancyPct > 50 ? "#f97316" : "#22c55e"} />
           <ArcGauge
-            value={slots.filter((s) => s.status === "available").length}
-            max={slots.length} label="Free Spots" unit="slots" color="#c6ff00" />
+            value={safeSlots.filter((s) => s.status === "available").length}
+            max={safeSlots.length} label="Free Spots" unit="slots" color="#c6ff00" />
         </div>
 
         <div className="flex flex-col items-end gap-0.5">

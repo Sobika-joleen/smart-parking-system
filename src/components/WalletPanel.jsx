@@ -134,7 +134,7 @@ const PresetBtn = ({ amount, selected, onClick }) => (
 // ── Main WalletPanel ──────────────────────────────────────────────────────────
 const PRESETS = [50, 100, 200, 500];
 
-const WalletPanel = ({ isOpen, onClose, walletBalance, transactions, addMoney }) => {
+const WalletPanel = ({ isOpen, onClose, walletBalance = 0, transactions = [], addMoney }) => {
   const [visible, setVisible]       = useState(false);
   const [selectedPreset, setPreset] = useState(null);
   const [customAmt, setCustomAmt]   = useState("");

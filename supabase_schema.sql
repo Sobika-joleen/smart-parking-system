@@ -77,8 +77,16 @@ begin
   values (new.id, new.raw_user_meta_data->>'full_name', new.raw_user_meta_data->>'vehicle_number', new.raw_user_meta_data->>'phone_number');
   return new;
 end;
-$$ language plpgsql security definer;
+$$ language plpgsql security definer set search_path = '';
 
 create trigger on_auth_user_created
   after insert on auth.users
   for each row execute procedure public.handle_new_user();
+
+-- Revoke execute permissions for security
+REVOKE EXECUTE ON FUNCTION public.handle_new_user() FROM PUBLIC;
+REVOKE EXECUTE ON FUNCTION public.handle_new_user() FROM anon, authenticated;
+
+-- Exclude tables from GraphQL schema
+COMMENT ON TABLE public.profiles IS '@graphql({"exclude": true})';
+COMMENT ON TABLE public.bookings IS '@graphql({"exclude": true})';

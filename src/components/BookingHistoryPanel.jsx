@@ -234,7 +234,7 @@ const PastBookingCard = ({ b, deleteBooking, index }) => {
 // ── Main Panel ────────────────────────────────────────────────────────────────
 const BookingHistoryPanel = ({
   isOpen, onClose,
-  bookings,
+  bookings = [],
   cancelBooking,
   deleteBooking,
   activateBooking,

@@ -75,7 +75,7 @@ const UpiOverlay = ({ amount, onSuccess, onFail }) => {
 // ── Main BookingModal ─────────────────────────────────────────────────────────
 const BookingModal = ({
   isOpen, onClose, onConfirm,
-  selectedSlot, selectedTimes, level, session,
+  selectedSlot, selectedRange = {}, level, session,
   walletBalance = 0,
 }) => {
   const [name, setName]                   = useState("");
@@ -97,17 +97,17 @@ const BookingModal = ({
     }
   }, [isOpen, session]);
 
-  const duration  = selectedTimes.length;
-  const { subtotal, tax, total } = calculateBookingAmount(duration);
+  // Compute duration + timeRange from selectedRange object
+  const startTime = selectedRange?.startTime || "";
+  const endTime   = selectedRange?.endTime   || "";
+  const timeRange = startTime && endTime ? `${startTime} – ${endTime}` : "";
 
-  const sortedTimes = [...selectedTimes].sort();
-  const timeRange =
-    sortedTimes.length > 0
-      ? `${sortedTimes[0]} – ${sortedTimes[sortedTimes.length - 1].replace(
-          /(\d+):/,
-          (_, h) => `${(parseInt(h) + 1).toString().padStart(2, "0")}:`
-        )}`
-      : "";
+  const timeToMins = (t) => { const [h, m] = t.split(":").map(Number); return h * 60 + m; };
+  const durationMins = startTime && endTime
+    ? Math.max(0, timeToMins(endTime) - timeToMins(startTime))
+    : 0;
+  const duration = durationMins / 60; // decimal hours
+  const { subtotal, tax, total } = calculateBookingAmount(duration);
 
   useEffect(() => {
     const handler = (e) => e.key === "Escape" && !isProcessing && onClose();
@@ -285,7 +285,7 @@ const BookingModal = ({
             {/* Price breakdown */}
             <div className="border-t border-white/5 pt-3 space-y-1.5">
               <div className="flex justify-between text-xs text-gray-500">
-                <span>Base ({duration}hr × ₹30)</span>
+                <span>Base ({duration.toFixed(1)}hr × ₹30)</span>
                 <span>₹{subtotal.toFixed(2)}</span>
               </div>
               <div className="flex justify-between text-xs text-gray-500">
